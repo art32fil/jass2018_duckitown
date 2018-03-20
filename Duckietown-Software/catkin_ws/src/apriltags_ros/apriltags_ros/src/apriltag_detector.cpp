@@ -77,7 +77,7 @@ namespace apriltags_ros{
     }
     
     //AprilTags::TagCodes tag_codes = AprilTags::tagCodes36h11;
-    tag_detector_= boost::shared_ptr<AprilTags::TagDetector>(new zbar::ImageScanner);
+    tag_detector_= boost::shared_ptr<zbar::ImageScanner>(new zbar::ImageScanner);
     tag_detector_->set_config(zbar::ZBAR_NONE, zbar::ZBAR_CFG_ENABLE, 1);
     image_sub_ = it_.subscribeCamera("image_rect", 1, &AprilTagDetector::imageCb, this);
     switch_sub_ = nh.subscribe("switch",1,&AprilTagDetector::switchCB, this);
@@ -110,7 +110,7 @@ namespace apriltags_ros{
     uchar *raw = (uchar *)grey.data;
 		
     zbar::Image image(width, height, "Y800", raw, width * height); 
-    int n = scanner.scan(image);
+    int n = tag_detector_->scan(image);
     ROS_DEBUG("%d tag detected", n);
     
     if(!sensor_frame_id_.empty())
@@ -134,7 +134,7 @@ namespace apriltags_ros{
 
       duckietown_msgs::AprilTagDetection tag_detection;
       tag_detection.pose = tag_pose;
-      tag_detection.id = atoi(symbol->get_data());
+      tag_detection.id = atoi(symbol->get_data().c_str());
       tag_detection.size = tag_size;
       tag_detection_array.detections.push_back(tag_detection);
       tag_pose_array.poses.push_back(tag_pose.pose);
