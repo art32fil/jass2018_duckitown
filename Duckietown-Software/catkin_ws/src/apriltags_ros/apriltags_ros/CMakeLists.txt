@@ -42,6 +42,7 @@ include_directories(
 add_library(apriltag_detector
   src/apriltag_detector.cpp
 )
+link_directories(/opt/ros/kinetic/lib)
 target_link_libraries(apriltag_detector
   ${catkin_LIBRARIES}
   opencv_core3
@@ -54,6 +55,7 @@ add_dependencies(apriltag_detector apriltags_ros_generate_messages_cpp)
 
 
 add_library(apriltag_detector_nodelet src/apriltag_detector_nodelet.cpp)
+link_directories(/opt/ros/kinetic/lib)
 target_link_libraries(apriltag_detector_nodelet
   ${catkin_LIBRARIES}
   opencv_core3
@@ -64,8 +66,9 @@ target_link_libraries(apriltag_detector_nodelet
   apriltag_detector
 )
 
-link_directories(/opt/ros/kinetic/lib)
+
 add_executable(apriltag_detector_node src/apriltag_detector_node.cpp)
+link_directories(/opt/ros/kinetic/lib)
 target_link_libraries(apriltag_detector_node
   ${catkin_LIBRARIES}
   opencv_core3
