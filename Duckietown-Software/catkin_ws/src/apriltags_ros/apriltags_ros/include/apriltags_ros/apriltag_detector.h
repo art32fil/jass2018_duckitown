@@ -6,6 +6,9 @@
 #include <duckietown_msgs/BoolStamped.h>
 #include <AprilTags/TagDetector.h>
 #include <tf/transform_broadcaster.h>
+#include <opencv2/highgui/highgui.hpp>  
+#include <opencv2/imgproc/imgproc.hpp>  
+#include <zbar.h>
 
 namespace apriltags_ros{
 
