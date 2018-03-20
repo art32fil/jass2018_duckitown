@@ -154,7 +154,7 @@ namespace apriltags_ros{
 
   std::map<int, AprilTagDescription> AprilTagDetector::parse_tag_descriptions(XmlRpc::XmlRpcValue& tag_descriptions){
     std::map<int, AprilTagDescription> descriptions;
-    ROS_ASSERT(tag_descriptions.getType() == XmlRpc::XmlRpcValue::TypeArray);
+    /*ROS_ASSERT(tag_descriptions.getType() == XmlRpc::XmlRpcValue::TypeArray);
     for (int32_t i = 0; i < tag_descriptions.size(); ++i) {
       XmlRpc::XmlRpcValue& tag_description = tag_descriptions[i];
       ROS_ASSERT(tag_description.getType() == XmlRpc::XmlRpcValue::TypeStruct);
@@ -177,7 +177,7 @@ namespace apriltags_ros{
       AprilTagDescription description(id, size, frame_name);
       ROS_INFO_STREAM("Loaded tag config: "<<id<<", size: "<<size<<", frame_name: "<<frame_name);
       descriptions.insert(std::make_pair(id, description));
-    }
+    }*/
     return descriptions;
   }
 
