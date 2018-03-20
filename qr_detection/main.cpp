@@ -3,6 +3,17 @@
 #include <zbar.h>  
 #include <iostream>  
 
+bool qr_found(int n)
+{
+	if (n == 0)
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
 
 int main(int argc, char* argv[])
 {
@@ -33,11 +44,13 @@ int main(int argc, char* argv[])
 		
 	zbar::Image image(width, height, "Y800", raw, width * height);
 	// scan the image for barcodes   
-	scanner.scan(image);
-	 
+	int n = scanner.scan(image);
+	//example
+	bool qr_exists = qr_found(n);
 	for (zbar::Image::SymbolIterator symbol = image.symbol_begin(); symbol != image.symbol_end(); ++symbol)
 	{
 		std::vector<cv::Point> vp;
+		
 		std::cout << symbol->get_data() << std::endl;   
 		int n = symbol->get_location_size();
 		for (int i = 0; i<n; i++)
@@ -46,5 +59,7 @@ int main(int argc, char* argv[])
 		}
 		symbol->get_location_size();
 	}	 
+	system("pause");
 	return 0;
 }
+
