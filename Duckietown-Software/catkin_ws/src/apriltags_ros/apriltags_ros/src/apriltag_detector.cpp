@@ -103,8 +103,8 @@ namespace apriltags_ros{
       return;
     }
 
-    cv::Mat gray;
-    cv::cvtColor(cv_ptr->image, gray, CV_BGR2GRAY);
+    cv::Mat grey;
+    cv::cvtColor(cv_ptr->image, grey, CV_BGR2GRAY);
     int width = cv_ptr->image.cols;
     int height = cv_ptr->image.rows;
     uchar *raw = (uchar *)grey.data;
