@@ -11,6 +11,7 @@
 #include <opencv2/imgproc/imgproc.hpp>  
 #include <zbar.h>
 #include <stdlib.h>
+#include <iostream>
 
 /*cv::VideoCapture cap(0);
 						 
@@ -135,6 +136,12 @@ namespace apriltags_ros{
       duckietown_msgs::AprilTagDetection tag_detection;
       tag_detection.pose = tag_pose;
       tag_detection.id = atoi(symbol->get_data().c_str());
+      int mask = 1024*1024;
+      while (mask>0) {
+        std::cout << int(bool(mask&tag_detection.id));
+        mask = mask >> 1;
+      }
+      std::cout << std::endl;
       tag_detection.size = tag_size;
       tag_detection_array.detections.push_back(tag_detection);
       tag_pose_array.poses.push_back(tag_pose.pose);
