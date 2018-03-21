@@ -195,7 +195,7 @@ Eigen::Matrix4d getRelativeTransform(std::pair<float, float>* p, double tag_size
       duckietown_msgs::AprilTagDetection tag_detection;
       tag_detection.pose = tag_pose;
       tag_detection.id = atoi(symbol->get_data().c_str());
-      cv::circle(cv_ptr->image,cv::Point(symbol->get_location_x(0), symbol->get_location_y(0)), 10,cv::Scalar( 255, 0, 0 ));
+      cv::circle(cv_ptr->image,cv::Point(symbol->get_location_x(0), symbol->get_location_y(0)), 10,cv::Scalar( 255, 0, 0 ),8);
       int mask = 1024*1024;
       while (mask>0) {
         std::cout << int(bool(mask&tag_detection.id));

@@ -64,16 +64,27 @@ class RandomAprilTagTurnsNode(object):
             #        elif (signType == taginfo.ONEWAY_LEFT):
             #            availableTurns = [0]
             #        elif (signType == taginfo.STOP):
-                        availableTurns = [1]
+            #            availableTurns = [1]
 
                         #now randomly choose a possible direction
-                    if(len(availableTurns)>0):
-                        randomIndex = numpy.random.randint(len(availableTurns))
-                        chosenTurn = availableTurns[randomIndex]
-                        self.turn_type = chosenTurn
-                        self.pub_turn_type.publish(self.turn_type)
-                        rospy.loginfo("possible turns %s." %(availableTurns))
-                        rospy.loginfo("Turn type now: %i" %(self.turn_type))
+            #        if(len(availableTurns)>0):
+            #            randomIndex = numpy.random.randint(len(availableTurns))
+            #            chosenTurn = availableTurns[randomIndex]
+            #            self.turn_type = chosenTurn
+            #            self.pub_turn_type.publish(self.turn_type)
+            #            rospy.loginfo("possible turns %s." %(availableTurns))
+            #            rospy.loginfo("Turn type now: %i" %(self.turn_type))
+            availableTurns = [1]
+
+                        #now randomly choose a possible direction
+            if(len(availableTurns)>0):
+                randomIndex = numpy.random.randint(len(availableTurns))
+                chosenTurn = availableTurns[randomIndex]
+                self.turn_type = chosenTurn
+                self.pub_turn_type.publish(self.turn_type)
+                rospy.loginfo("possible turns %s." %(availableTurns))
+                rospy.loginfo("Turn type now: %i" %(self.turn_type))
+
 
     def setupParameter(self,param_name,default_value):
         value = rospy.get_param(param_name,default_value)
