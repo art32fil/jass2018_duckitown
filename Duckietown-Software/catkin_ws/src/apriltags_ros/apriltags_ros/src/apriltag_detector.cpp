@@ -12,6 +12,12 @@
 #include <zbar.h>
 #include <stdlib.h>
 #include <iostream>
+#include <Eigen/Dense>
+
+#include "opencv2/opencv.hpp"
+
+#include <utility>
+#include <vector>
 
 /*cv::VideoCapture cap(0);
 						 
@@ -59,6 +65,44 @@
 return 0;*/
 
 namespace apriltags_ros{
+
+Eigen::Matrix4d getRelativeTransform(std::pair<float, float>* p, double tag_size, double fx, double fy, double px, double py) {
+  std::vector<cv::Point3f> objPts;
+  std::vector<cv::Point2f> imgPts;
+  double s = tag_size/2.;
+  objPts.push_back(cv::Point3f(-s,-s, 0));
+  objPts.push_back(cv::Point3f( s,-s, 0));
+  objPts.push_back(cv::Point3f( s, s, 0));
+  objPts.push_back(cv::Point3f(-s, s, 0));
+
+  std::pair<float, float> p1 = p[0];
+  std::pair<float, float> p2 = p[1];
+  std::pair<float, float> p3 = p[2];
+  std::pair<float, float> p4 = p[3];
+  imgPts.push_back(cv::Point2f(p1.first, p1.second));
+  imgPts.push_back(cv::Point2f(p2.first, p2.second));
+  imgPts.push_back(cv::Point2f(p3.first, p3.second));
+  imgPts.push_back(cv::Point2f(p4.first, p4.second));
+
+  cv::Mat rvec, tvec;
+  cv::Matx33f cameraMatrix(
+                           fx, 0, px,
+                           0, fy, py,
+                           0,  0,  1);
+  cv::Vec4f distParam(0,0,0,0); // all 0?
+  cv::solvePnP(objPts, imgPts, cameraMatrix, distParam, rvec, tvec);
+  cv::Matx33d r;
+  cv::Rodrigues(rvec, r);
+  Eigen::Matrix3d wRo;
+  wRo << r(0,0), r(0,1), r(0,2), r(1,0), r(1,1), r(1,2), r(2,0), r(2,1), r(2,2);
+
+  Eigen::Matrix4d T; 
+  T.topLeftCorner(3,3) = wRo;
+  T.col(3).head(3) << tvec.at<double>(0), tvec.at<double>(1), tvec.at<double>(2);
+  T.row(3) << 0,0,0,1;
+
+  return T;
+}
 
   AprilTagDetector::AprilTagDetector(ros::NodeHandle& nh, ros::NodeHandle& pnh): it_(nh){
     /*XmlRpc::XmlRpcValue april_tag_descriptions;
@@ -123,14 +167,24 @@ namespace apriltags_ros{
     
     for (zbar::Image::SymbolIterator symbol = image.symbol_begin(); symbol != image.symbol_end(); ++symbol) {
       double tag_size = 0.065;
+
+      std::pair<float,float> p[4];
+      for (int i = 0; i < 4; i++) {
+        p[i].first = symbol->get_location_x(i);
+        p[i].second = symbol->get_location_y(i);
+      }
+      Eigen::Matrix4d transform = getRelativeTransform(p,tag_size, fx, fy, px, py);
+      Eigen::Matrix3d rot = transform.block(0,0,3,3);
+      Eigen::Quaternion<double> rot_quaternion = Eigen::Quaternion<double>(rot);
+
       geometry_msgs::PoseStamped tag_pose;
-      tag_pose.pose.position.x = 0;
-      tag_pose.pose.position.y = 0;
-      tag_pose.pose.position.z = 0;
-      tag_pose.pose.orientation.x = 0;
-      tag_pose.pose.orientation.y = 0;
-      tag_pose.pose.orientation.z = 0;
-      tag_pose.pose.orientation.w = 1;
+      tag_pose.pose.position.x = transform(0,3);
+      tag_pose.pose.position.y = transform(1,3);
+      tag_pose.pose.position.z = transform(2,3);
+      tag_pose.pose.orientation.x = rot_quaternion.x();
+      tag_pose.pose.orientation.y = rot_quaternion.y();
+      tag_pose.pose.orientation.z = rot_quaternion.z();
+      tag_pose.pose.orientation.w = rot_quaternion.w();
       tag_pose.header = cv_ptr->header;
 
       duckietown_msgs::AprilTagDetection tag_detection;
