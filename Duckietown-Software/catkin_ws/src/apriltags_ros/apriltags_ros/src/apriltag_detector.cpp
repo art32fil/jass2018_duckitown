@@ -157,6 +157,11 @@ Eigen::Matrix4d getRelativeTransform(std::pair<float, float>* p, double tag_size
     zbar::Image image(width, height, "Y800", raw, width * height); 
     int n = tag_detector_->scan(image);
     ROS_DEBUG("%d tag detected", n);
+
+    double fx = cam_info->K[0];
+    double fy = cam_info->K[4];
+    double px = cam_info->K[2];
+    double py = cam_info->K[5];
     
     if(!sensor_frame_id_.empty())
       cv_ptr->header.frame_id = sensor_frame_id_;
