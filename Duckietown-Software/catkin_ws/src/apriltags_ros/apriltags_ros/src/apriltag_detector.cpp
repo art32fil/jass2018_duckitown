@@ -607,14 +607,14 @@ Eigen::Matrix4d getRelativeTransform(std::pair<float, float>* p, double tag_size
     geometry_msgs::PoseArray tag_pose_array;
     tag_pose_array.header = cv_ptr->header;
     
-    std::pair<float,float> p[4];
-    for (int i = 0; i < 4; i++) {
-      p[i].first = src[i].x;
-      p[i].second = src[i].y;
-    }
-
     for (zbar::Image::SymbolIterator symbol = image.symbol_begin(); symbol != image.symbol_end(); ++symbol) {
       double tag_size = 0.065;
+      std::pair<float,float> p[4];
+
+      for (int i = 0; i < 4; i++) {
+        p[i].first = src[i].x;
+        p[i].second = src[i].y;
+      }
 
 
       Eigen::Matrix4d transform = getRelativeTransform(p,tag_size, fx, fy, px, py);
