@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python
 def extract_info(dec_digit):
     digit = bin(dec_digit)
     array = []
@@ -18,5 +18,5 @@ def extract_info(dec_digit):
     array.reverse()
     return array
 
-
-print(extract_info(143))
+a,b,c = extract_info(143)
+print(str(a)+b+c)
