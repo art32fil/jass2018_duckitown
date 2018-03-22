@@ -237,7 +237,7 @@ class RandomAprilTagTurnsNode(object):
                 return
             self.prev_invoke_time = curr_invoke_time
 
-            for detection in tag_msgs.detections
+            for detection in tag_msgs.detections:
                 id, type, incomming_dir = extract_info(detection.id)
                 rospy.loginfo("found id: " + str(id))
                 rospy.loginfo("has type: " + type)
