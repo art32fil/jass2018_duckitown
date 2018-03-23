@@ -214,7 +214,7 @@ class RandomAprilTagTurnsNode(object):
         rospy.loginfo("[%s] Initialzed." %(self.node_name))
 
         self.rate = rospy.Rate(30) # 10hz
-        self.D = nx.MultiDiGraph()
+        self.G = nx.MultiDiGraph()
         self.outcommimg_id = 0
         self.outcomming_dir = '0'
         self.path = []
@@ -231,20 +231,21 @@ class RandomAprilTagTurnsNode(object):
 
     def cbTag(self, tag_msgs):
         if(self.fsm_mode == "INTERSECTION_CONTROL"):
-            curr_invoke_time = time.time()
-            if (curr_invoke_time - self.prev_invoke_time < 10):
-                self.prev_invoke_time = curr_invoke_time
-                return
-            self.prev_invoke_time = curr_invoke_time
-
             for detection in tag_msgs.detections:
+                curr_invoke_time = time.time()
+                if (curr_invoke_time - self.prev_invoke_time < 10):
+                    self.prev_invoke_time = curr_invoke_time
+                    return
+                self.prev_invoke_time = curr_invoke_time
+
                 id, type, incomming_dir = extract_info(detection.id)
                 rospy.loginfo("found id: " + str(id))
                 rospy.loginfo("has type: " + type)
                 rospy.loginfo("incomming dir: " + incomming_dir)
                 if (len(self.path) == 0):
-                    self.map_observing, self.path = step(self.G,id,type,incomming_dir,outcommimg_id,outcomming_dir)
-                available_turns = own_dir(incomming_dir, self.path[0])
+                    self.map_observing, self.path = step
+                         (self.G, id, type, incomming_dir, self.outcommimg_id, self.outcomming_dir)
+                availableTurns = own_dir(incomming_dir, self.path[0])
                 self.outcomming_dir = self.path[0]
                 self.outcommimg_id = id
                 self.path = self.path[1:]

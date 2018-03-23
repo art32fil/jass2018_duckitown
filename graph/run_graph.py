@@ -123,7 +123,7 @@ G = nx.MultiDiGraph()
 
 diery = ['0', 'X', 'X', 'X', 'T-right', 'X', 'T-up', 'T-left', 'T-up']
 
-def step(incomming_id, incomming_type, incomming_dir, outcomming_id, outcomming_dir):
+def step(G, incomming_id, incomming_type, incomming_dir, outcomming_id, outcomming_dir):
     print("found: "+str(incomming_id)+", come from "+incomming_dir)
     new_observation(G,incomming_id,incomming_type,incomming_dir,outcomming_id,outcomming_dir)
     b, dir = i_has_unobserved_way(G,incomming_id,incomming_dir)
