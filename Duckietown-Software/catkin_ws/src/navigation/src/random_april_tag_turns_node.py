@@ -66,6 +66,8 @@ def is_fully_observed(G, id):
             attributes[id] == str(id)+": T-down" or
             attributes[id] == str(id)+": T-left"):
         return len(G.edges(id)) == 3
+    if (attributes[id] == str(id)+": |"):
+        return len(G.edges(id)) == 2
     return -1
 
 
