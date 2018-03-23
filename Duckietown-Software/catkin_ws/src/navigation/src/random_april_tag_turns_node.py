@@ -71,12 +71,14 @@ def new_observation(G, new_id, new_type, new_dir, prev_id, prev_dir):
         rospy.loginfo ("prev id is -2, so we don't add edge")
         return
     rospy.loginfo ("prev id is not -2. carry on")
-    Es = G.edges(prev_id)
-    rospy.loginfo("edges of " + str(prev_id) + ": " + str(Es))
-    for i_e in G[prev_id][new_id]:
-        if (G[prev_id][new_id][i_e]['label'] == prev_dir+" -> "+new_dir):
-            rospy.loginfo("this edge already exists")
-            return
+    if (G.has_edge(prev_id, new_id)):
+        rospy.loginfo ("there are edges between " + str(prev_id) + " and " + str(new_id))
+        Es = G.edges(prev_id)
+        rospy.loginfo("edges of " + str(prev_id) + ": " + str(Es))
+        for i_e in G[prev_id][new_id]:
+            if (G[prev_id][new_id][i_e]['label'] == prev_dir+" -> "+new_dir):
+                rospy.loginfo("this edge already exists")
+                return
 
     rospy.loginfo("edges are added")
     G.add_edge(new_id, prev_id, label=new_dir+" -> "+prev_dir)
