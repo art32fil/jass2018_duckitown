@@ -80,7 +80,7 @@ def possible_dirs(G, id):
         return['left', 'up', 'down']
     if (attributes[id] == str(id)+": X"):
         return['left', 'up', 'down', 'right']
-    if (attributes[id] == str(id)+": |")
+    if (attributes[id] == str(id)+": |"):
         return['up', 'down']
 
 def get_id_dir_for_move(G, prev_id, prev_dir):
