@@ -235,6 +235,7 @@ class RandomAprilTagTurnsNode(object):
                 curr_invoke_time = time.time()
                 if (curr_invoke_time - self.prev_invoke_time < 10):
                     self.prev_invoke_time = curr_invoke_time
+                    self.pub_turn_type.publish(self.turn_type)
                     return
                 self.prev_invoke_time = curr_invoke_time
 
@@ -243,8 +244,14 @@ class RandomAprilTagTurnsNode(object):
                 rospy.loginfo("has type: " + type)
                 rospy.loginfo("incomming dir: " + incomming_dir)
                 if (len(self.path) == 0):
-                    self.map_observing, self.path = step
-                         (self.G, id, type, incomming_dir, self.outcommimg_id, self.outcomming_dir)
+                    self.map_observing, self.path = step(self.G,
+                                                         id,
+                                                         type,
+                                                         incomming_dir,
+                                                         self.outcommimg_id,
+                                                         self.outcomming_dir)
+                    nx.nx_agraph.write_dot(G, "/home/ubuntu/graph.txt")
+
                 availableTurns = own_dir(incomming_dir, self.path[0])
                 self.outcomming_dir = self.path[0]
                 self.outcommimg_id = id
