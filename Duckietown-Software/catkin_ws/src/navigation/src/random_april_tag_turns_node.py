@@ -223,7 +223,7 @@ class RandomAprilTagTurnsNode(object):
 
         self.rate = rospy.Rate(30) # 10hz
         self.G = nx.MultiDiGraph()
-        self.outcommimg_id = 0
+        self.outcommimg_id = -1
         self.outcomming_dir = '0'
         self.path = []
         self.map_observing = True
