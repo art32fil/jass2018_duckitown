@@ -131,7 +131,7 @@ def i_has_unobserved_way(G, id, prev_dir):
     return found_path_to_unobserved(G, id, prev_dir, [], new_possible_moves)
 
 def find_path_to_airport(G, id, prev_dir):
-    if (id == -2):
+    if (id == -1):
        return []
     
 
