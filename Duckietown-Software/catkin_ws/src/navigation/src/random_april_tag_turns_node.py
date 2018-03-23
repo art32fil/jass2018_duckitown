@@ -159,7 +159,7 @@ def i_has_unobserved_way(G, id, prev_dir):
     return found_path_to_unobserved(G, id, prev_dir, [], new_possible_moves)
 
 def find_path_to_airport(G, id, prev_dir):
-    Es = G.edges(id)
+    Es = G.edges(id, data=True)
     rospy.loginfo("the edges of "+str(id)+": "+str(Es))
     for edge in Es:
         if (edge[1] == -1 and edge[2]['label'].split(' -> ')[0] != prev_dir):
