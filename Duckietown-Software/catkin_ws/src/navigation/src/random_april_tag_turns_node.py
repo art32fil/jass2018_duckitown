@@ -243,8 +243,8 @@ def set_graph(G, map_observing):
     G.add_node(1,  label="T-down")
     G.add_node(2,  label="T-left")
     G.add_node(3,  label="T-up")
-    G.add_edge(-1, 0, label="left -> up")
-    G.add_edge(0, -1, label="up -> left")
+    G.add_edge(-1, 0, label="up -> up")
+    G.add_edge(0, -1, label="up -> up")
     G.add_edge(0, 1, label="right -> left")
     G.add_edge(1, 0, label="left -> right")
     G.add_edge(1, 2, label="right -> left")
@@ -253,8 +253,8 @@ def set_graph(G, map_observing):
     G.add_edge(3, 0, label="left -> down")
     G.add_edge(3, 2, label="right -> down")
     G.add_edge(2, 3, label="down -> right")
-    G.add_edge(2, -1, label="up -> right")
-    G.add_edge(-1, 2, label="right -> up")
+    G.add_edge(2, -1, label="up -> down")
+    G.add_edge(-1, 2, label="down -> up")
     map_observing = False
 
 class RandomAprilTagTurnsNode(object):
