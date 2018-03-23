@@ -3,6 +3,190 @@ import rospy
 import numpy
 from duckietown_msgs.msg import FSMState, AprilTagsWithInfos, BoolStamped
 from std_msgs.msg import String, Int16 #Imports msg
+import networkx as nx
+import time
+
+def extract_info(dec_digit):
+    digit = bin(dec_digit)
+    array = []
+    two_last = digit[-2:]
+    if int(two_last, 2) == 0: array.append("up")
+    elif int(two_last, 2) == 1: array.append("left")
+    elif int(two_last, 2) == 2: array.append("down")
+    else: array.append("right")
+    cross = digit[-5:-2]
+    if int(cross, 2) == 0: array.append("X")
+    elif int(cross, 2) == 1: array.append("T-up")
+    elif int(cross, 2) == 2: array.append("T-left")
+    elif int(cross, 2) == 3: array.append("T-down")
+    else: array.append("T-right")
+    num = digit[:-5]
+    array.append(int(num, 2))
+    array.reverse()
+    return array
+
+def come_is_possible(new_type, new_dir):
+    dictionary = {'T-up':    {'left': 1, 'up': 1, 'right': 1, 'down': 0},
+                  'T-right': {'left': 0, 'up': 1, 'right': 1, 'down': 1},
+                  'T-down':  {'left': 1, 'up': 0, 'right': 1, 'down': 1},
+                  'T-left':  {'left': 1, 'up': 1, 'right': 0, 'down': 1},
+                  'X':       {'left': 1, 'up': 1, 'right': 1, 'down': 1}}
+    return dictionary[new_type][new_dir]
+
+
+def new_observation(G, new_id, new_type, new_dir, prev_id, prev_dir):
+    if (not come_is_possible(new_type, new_dir)):
+        rospy.loginfo("alarm! we come to " + new_type + " through " + new_dir)
+        return
+    if (not G.has_node(new_id)):
+        G.add_node(new_id, label=str(new_id)+": "+new_type)
+    if (prev_id == 0):
+        return
+    if (G.has_edge(prev_id, new_id) or G.has_edge(new_id, prev_id)):
+        return
+    G.add_edge(new_id, prev_id, label=new_dir+" -> "+prev_dir)
+    G.add_edge(prev_id, new_id, label=prev_dir+" -> "+new_dir)
+
+
+def is_fully_observed(G, id):
+    attributes = nx.get_node_attributes(G, 'label')
+    if (attributes[id] == str(id)+": X"):
+        return len(G.edges(id)) == 4
+    if (attributes[id] == str(id)+": T-up" or
+            attributes[id] == str(id)+": T-right" or
+            attributes[id] == str(id)+": T-down" or
+            attributes[id] == str(id)+": T-left"):
+        return len(G.edges(id)) == 3
+    return -1
+
+
+def possible_dirs(G, id):
+    attributes = nx.get_node_attributes(G, 'label')
+    if (attributes[id] == str(id)+": T-up"):
+        return ['left', 'up', 'right']
+    if (attributes[id] == str(id)+": T-right"):
+        return['down', 'up', 'right']
+    if (attributes[id] == str(id)+": T-down"):
+        return['left', 'down', 'right']
+    if (attributes[id] == str(id)+": T-left"):
+        return['left', 'up', 'down']
+    if (attributes[id] == str(id)+": X"):
+        return['left', 'up', 'down', 'right']
+
+def get_id_dir_for_move(G, prev_id, prev_dir):
+    # all links are set
+    # output - list of 3-element set
+    #   where we could go (dir),
+    #     where we will come (id),
+    #       in what dir we will come (dir)
+    Es = G.edges(prev_id, data=True)
+    observed_dirs = []
+    observed_nodes = []
+    incomming_dirs = []
+    out = []
+    for edge in Es:
+        if (prev_dir != edge[2]['label'].split(' -> ')[0]):
+            out.append([edge[2]['label'].split(' -> ')[0],
+                        edge[1],
+                        edge[2]['label'].split(' -> ')[1]])
+    return out
+
+def found_path_to_unobserved(G, id, prev_dir, list_of_observed):
+    #print ("we were here: "+str(list_of_observed))
+    npm = new_possible_moves(G, id, prev_dir)
+    if (len(npm) != 0):
+       #print ("I ("+str(id)+") have unobserved "+str(npm))
+       return True, [npm[0]]
+    #print ("I ("+str(id)+") have not unobserved, go to child")
+    moving_array = get_id_dir_for_move(G, id, prev_dir)
+    #print ("found children: " + str(moving_array))
+    for child in moving_array:
+        #print ("go to child " + str(child))
+        if ([child[1], child[0]] in list_of_observed):
+            continue
+        #print ("this child was not visited yet")
+        b, path = found_path_to_unobserved(G, child[1], child[2],
+                                           list_of_observed+[[child[1], child[0]]])
+        if (b):
+            #print ("my ("+str(id)+") child ("+str(child[1])+") has unobserved way, so i do "+str(child[0]))
+            return True, [child[0]]+path
+    #print ("I ("+str(id)+") have not unobserved "+str(npm))
+    return False, []
+
+def i_has_unobserved_way(G, id, prev_dir):
+    return found_path_to_unobserved(G, id, prev_dir, [])
+
+def observed_dirs(G, id):
+    Es = G.edges(id, data=True)
+    observed_dirs = []
+    for edge in Es:
+        observed_dirs.append(edge[2]['label'].split(' -> ')[0])
+    return observed_dirs
+
+
+def unobserved_dirs(G, id):
+    if (is_fully_observed(G, id)):
+        return []
+    return list(set(possible_dirs(G, id)) - set(observed_dirs(G, id)))
+
+
+def all_possible_moves(G, id, prev_dir):
+    return list(set(possible_dirs(G, id)) - set([prev_dir]))
+
+
+def new_possible_moves(G, id, prev_dir):
+    return list(set(unobserved_dirs(G, id)) - set([prev_dir]))
+
+def step(G, incomming_id, incomming_type, incomming_dir, outcomming_id, outcomming_dir):
+    rospy.loginfo("found: "+str(incomming_id)+", come from "+incomming_dir)
+    new_observation(G,incomming_id,incomming_type,incomming_dir,outcomming_id,outcomming_dir)
+    b, dir = i_has_unobserved_way(G,incomming_id,incomming_dir)
+    if (b):
+        rospy.loginfo("path to unobserved: "+str(dir))
+    return b, dir
+
+def own_dir(incomming_dir, outcomming_id): # 0 - turn left, 1 - forward, 2 - right
+    if   (incomming_dir == 'up'):
+        if   (outcomming_id == 'up'):
+            rospy.logionf("alarm! we need to go up from up! bot will come in the random direction")
+            return [0,1,2]
+        elif (outcomming_id == 'right'):
+            return [0]
+        elif (outcomming_id == 'down'):
+            return [1]
+        elif (outcomming_id == 'left'):
+            return [2]
+    elif (incomming_dir == 'right'):
+        if   (outcomming_id == 'up'):
+            return [2]
+        elif (outcomming_id == 'right'):
+            rospy.logionf("alarm! we need to go right from right! bot will come in the random direction")
+            return [0,1,2]
+        elif (outcomming_id == 'down'):
+            return [0]
+        elif (outcomming_id == 'left'):
+            return [1]
+    elif (incomming_dir == 'down'):
+        if   (outcomming_id == 'up'):
+            return [1]
+        elif (outcomming_id == 'right'):
+            return [2]
+        elif (outcomming_id == 'down'):
+            rospy.logionf("alarm! we need to go down from down! bot will come in the random direction")
+            return [0,1,2]
+        elif (outcomming_id == 'left'):
+            return [0]
+    elif (incomming_dir == 'left'):
+        if   (outcomming_id == 'up'):
+            return [0]
+        elif (outcomming_id == 'right'):
+            return [1]
+        elif (outcomming_id == 'down'):
+            return [2]
+        elif (outcomming_id == 'left'):
+            rospy.logionf("alarm! we need to go left from left! bot will come in the random direction")
+            return [0,1,2]
+
 
 class RandomAprilTagTurnsNode(object):
     def __init__(self):
@@ -30,6 +214,12 @@ class RandomAprilTagTurnsNode(object):
         rospy.loginfo("[%s] Initialzed." %(self.node_name))
 
         self.rate = rospy.Rate(30) # 10hz
+        self.G = nx.MultiDiGraph()
+        self.outcommimg_id = 0
+        self.outcomming_dir = '0'
+        self.path = []
+        self.map_observing = True
+        self.prev_invoke_time = time.time()
 
     def cbMode(self, mode_msg):
         #print mode_msg
@@ -41,49 +231,42 @@ class RandomAprilTagTurnsNode(object):
 
     def cbTag(self, tag_msgs):
         if(self.fsm_mode == "INTERSECTION_CONTROL"):
-            #loop through list of april tags
-            #for i, taginfo in enumerate(tag_msgs.infos):
-            #    if tag_msgs.detections[i].pose.pose.position.y > 0.25:
-            #        continue
-            #    print taginfo
-            #    rospy.loginfo("[%s] taginfo." %(taginfo))
-            #    if(taginfo.tag_type == taginfo.SIGN):
-            #        availableTurns = []
-            #        #go through possible intersection types
-            #        signType = taginfo.traffic_sign_type
-            #        if(signType == taginfo.NO_RIGHT_TURN or signType == taginfo.LEFT_T_INTERSECT):
-            #            availableTurns = [0,1] # these mystical numbers correspond to the array ordering in open_loop_intersection_control_node (very bad)
-            #        elif (signType == taginfo.NO_LEFT_TURN or signType == taginfo.RIGHT_T_INTERSECT):
-            #            availableTurns = [1,2]
-            #        elif (signType== taginfo.FOUR_WAY):
-            #            availableTurns = [0,1,2]
-            #        elif (signType == taginfo.T_INTERSECTION):
-            #            availableTurns = [0,2]
-            #        elif (signType == taginfo.ONEWAY_RIGHT):
-            #            availableTurns = [2]
-            #        elif (signType == taginfo.ONEWAY_LEFT):
-            #            availableTurns = [0]
-            #        elif (signType == taginfo.STOP):
-            #            availableTurns = [1]
+            self.pub_turn_type.publish(self.turn_type)
+            for detection in tag_msgs.detections:
+                curr_invoke_time = time.time()
+                if (curr_invoke_time - self.prev_invoke_time < 10):
+                    self.prev_invoke_time = curr_invoke_time
+                    self.pub_turn_type.publish(self.turn_type)
+                    return
+                self.prev_invoke_time = curr_invoke_time
 
-                        #now randomly choose a possible direction
-            #        if(len(availableTurns)>0):
-            #            randomIndex = numpy.random.randint(len(availableTurns))
-            #            chosenTurn = availableTurns[randomIndex]
-            #            self.turn_type = chosenTurn
-            #            self.pub_turn_type.publish(self.turn_type)
-            #            rospy.loginfo("possible turns %s." %(availableTurns))
-            #            rospy.loginfo("Turn type now: %i" %(self.turn_type))
-            availableTurns = [1]
+                id, type, incomming_dir = extract_info(detection.id)
+                rospy.loginfo("found id: " + str(id))
+                rospy.loginfo("has type: " + type)
+                rospy.loginfo("incomming dir: " + incomming_dir)
+                if (len(self.path) == 0):
+                    rospy.loginfo("self.path = " + str(self.path))
+                    rospy.loginfo("self.path = " + str(self.outcomming_dir))
+                    self.map_observing, self.path = step(self.G,
+                                                         id,
+                                                         type,
+                                                         incomming_dir,
+                                                         self.outcommimg_id,
+                                                         self.outcomming_dir)
+                    nx.nx_agraph.write_dot(self.G, "/home/ubuntu/graph.txt")
 
-                        #now randomly choose a possible direction
-            if(len(availableTurns)>0):
-                randomIndex = numpy.random.randint(len(availableTurns))
-                chosenTurn = availableTurns[randomIndex]
-                self.turn_type = chosenTurn
-                self.pub_turn_type.publish(self.turn_type)
-                rospy.loginfo("possible turns %s." %(availableTurns))
-                rospy.loginfo("Turn type now: %i" %(self.turn_type))
+                availableTurns = own_dir(incomming_dir, self.path[0])
+                self.outcomming_dir = self.path[0]
+                self.outcommimg_id = id
+                self.path = self.path[1:]
+
+                if(len(availableTurns)>0):
+                    randomIndex = numpy.random.randint(len(availableTurns))
+                    chosenTurn = availableTurns[randomIndex]
+                    self.turn_type = chosenTurn
+                    self.pub_turn_type.publish(self.turn_type)
+                    rospy.loginfo("possible turns %s." %(availableTurns))
+                    rospy.loginfo("Turn type now: %i" %(self.turn_type))
 
 
     def setupParameter(self,param_name,default_value):
