@@ -5,6 +5,20 @@ from duckietown_msgs.msg import FSMState, AprilTagsWithInfos, BoolStamped
 from std_msgs.msg import String, Int16 #Imports msg
 import networkx as nx
 import time
+import socket
+import json
+import pickle
+
+def send_ready(duck_is_ready, coord):
+    json_file = json.dumps({"duck_is_ready" : duck_is_ready, "x" : coord[0], "y" : coord[1]})
+    sock = socket.socket()
+    sock.bind(('', 9090))
+    sock.listen(1)
+    conn, addr = sock.accept()
+    print(pickle.dumps(json_file))
+    print(pickle.loads((pickle.dumps(json_file))))
+    conn.sendall(pickle.dumps(json_file))
+    conn.close()
 
 def extract_info(dec_digit):
     digit = bin(dec_digit)
@@ -299,6 +313,8 @@ class RandomAprilTagTurnsNode(object):
                                                          self.outcomming_dir)
                     nx.nx_agraph.write_dot(self.G, "/home/ubuntu/graph.txt")
                     if (self.map_observing == False):
+                        if (id == -1):
+                            send_ready(True, [self.airport_x, self.airport_y])
                         self.path = found_path_to_unobserved(self.G,
                                                              id,
                                                              incomming_dir,
