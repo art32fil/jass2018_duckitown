@@ -263,7 +263,7 @@ class RandomAprilTagTurnsNode(object):
         self.outcomming_id = -2
         self.outcomming_dir = '0'
         self.path = []
-        self.map_observing = True
+        self.map_observing = False
         self.prev_invoke_time = time.time()
         self.airport_x = 0
         self.airport_y = 0
@@ -314,6 +314,8 @@ class RandomAprilTagTurnsNode(object):
                     nx.nx_agraph.write_dot(self.G, "/home/ubuntu/graph.txt")
                     if (self.map_observing == False):
                         if (id == -1):
+                            rospy.loginfo("sending message")
+                            rospy.loginfo("x = "+str(self.airport_x) + ", y = " + str(self.airport_y))
                             send_ready(True, [self.airport_x, self.airport_y])
                         self.path = found_path_to_unobserved(self.G,
                                                              id,
