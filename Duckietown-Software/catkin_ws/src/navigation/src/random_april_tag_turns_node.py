@@ -52,12 +52,13 @@ def new_observation(G, new_id, new_type, new_dir, prev_id, prev_dir):
     rospy.loginfo("we come from right lodirection")
     if (not G.has_node(new_id)):
         G.add_node(new_id, label=str(new_id)+": "+new_type)
-    rospy.loginfo("new id " + str(id) + "is in graph (added or already was)")
+    rospy.loginfo("new id " + str(new_id) + "is in graph (added or already was)")
     if (prev_id == -2):
         rospy.loginfo ("prev id is -2, so we don't add edge")
         return
     rospy.loginfo ("prev id is not -2. carry on")
     Es = G.edges(prev_id)
+    rospy.loginfo("edges of " + str(prev_id) + ": " + str(Es))
     for edge in Es:
         if (edge[1] == new_id and edge[2]['label'] == prev_dir+" -> "+new_dir):
             rospy.loginfo("this edge already exists")
