@@ -242,7 +242,7 @@ class RandomAprilTagTurnsNode(object):
 
         self.rate = rospy.Rate(30) # 10hz
         self.G = nx.MultiDiGraph()
-        self.outcommimg_id = -2
+        self.outcomming_id = -2
         self.outcomming_dir = '0'
         self.path = []
         self.map_observing = True
@@ -282,7 +282,7 @@ class RandomAprilTagTurnsNode(object):
                 rospy.loginfo("found id: " + str(id))
                 rospy.loginfo("has type: " + type)
                 rospy.loginfo("incomming dir: " + incomming_dir)
-                rospy.loginfo("previous id: " + str(self.outcommimg_id))
+                rospy.loginfo("previous id: " + str(self.outcomming_id))
                 rospy.loginfo("outcomming dir: " + str(self.outcommimg_dir))
                 if (len(self.path) == 0):
                     rospy.loginfo("self.path = " + str(self.path))
@@ -291,7 +291,7 @@ class RandomAprilTagTurnsNode(object):
                                                          id,
                                                          type,
                                                          incomming_dir,
-                                                         self.outcommimg_id,
+                                                         self.outcomming_id,
                                                          self.outcomming_dir)
                     nx.nx_agraph.write_dot(self.G, "/home/ubuntu/graph.txt")
                     if (self.map_observing == False):
@@ -303,7 +303,7 @@ class RandomAprilTagTurnsNode(object):
 
                 availableTurns = own_dir(incomming_dir, self.path[0])
                 self.outcomming_dir = self.path[0]
-                self.outcommimg_id = id
+                self.outcomming_id = id
                 self.path = self.path[1:]
 
                 if(len(availableTurns)>0):
