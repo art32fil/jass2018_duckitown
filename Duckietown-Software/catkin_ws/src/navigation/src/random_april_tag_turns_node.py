@@ -286,6 +286,7 @@ class RandomAprilTagTurnsNode(object):
                         self.path = found_path_to_unobserved(self.G,
                                                              id,
                                                              incomming_dir,
+                                                             [],
                                                              find_path_to_airport)
 
                 availableTurns = own_dir(incomming_dir, self.path[0])
