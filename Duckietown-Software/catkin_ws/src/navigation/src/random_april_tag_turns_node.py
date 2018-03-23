@@ -53,6 +53,8 @@ def new_observation(G, new_id, new_type, new_dir, prev_id, prev_dir):
         return
     if (G.has_edge(prev_id, new_id) or G.has_edge(new_id, prev_id)):
         return
+    rospy.loginfo("add edge: "+str(new_id)+ ": " + new_dir+" -> "+prev_dir + ": " + str(prev_id))
+    rospy.loginfo("add edge: "+str(prev_id)+ ": " + prev_dir+" -> "+new_dir + ": " + str(new_id))
     G.add_edge(new_id, prev_id, label=new_dir+" -> "+prev_dir)
     G.add_edge(prev_id, new_id, label=prev_dir+" -> "+new_dir)
 
