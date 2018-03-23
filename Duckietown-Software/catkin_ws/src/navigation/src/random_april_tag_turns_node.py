@@ -316,16 +316,8 @@ class RandomAprilTagTurnsNode(object):
                 rospy.loginfo("previous id: " + str(self.outcomming_id))
                 rospy.loginfo("outcomming dir: " + str(self.outcomming_dir))
                 if (len(self.path) == 0):
-                    rospy.loginfo("self.path = " + str(self.path))
-                    rospy.loginfo("self.outcomming_dir = " + str(self.outcomming_dir))
-                    self.map_observing, self.path = step(self.G,
-                                                         id,
-                                                         type,
-                                                         incomming_dir,
-                                                         self.outcomming_id,
-                                                         self.outcomming_dir)
-                    nx.nx_agraph.write_dot(self.G, "/home/ubuntu/graph.txt")
                     if (self.map_observing == False):
+                        rospy.loginfo("graph is ready. try to find path to airport")
                         if (id == -1):
                             self.sending_airport_coord_stage = True
                             rospy.loginfo("sending message")
@@ -339,6 +331,16 @@ class RandomAprilTagTurnsNode(object):
                                                              incomming_dir,
                                                              [],
                                                              find_path_to_airport)
+                    else:
+                        rospy.loginfo("self.path = " + str(self.path))
+                        rospy.loginfo("self.outcomming_dir = " + str(self.outcomming_dir))
+                        self.map_observing, self.path = step(self.G,
+                                                             id,
+                                                             type,
+                                                             incomming_dir,
+                                                             self.outcomming_id,
+                                                             self.outcomming_dir)
+                        nx.nx_agraph.write_dot(self.G, "/home/ubuntu/graph.txt")
 
                 availableTurns = own_dir(incomming_dir, self.path[0])
                 self.outcomming_dir = self.path[0]
