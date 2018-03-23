@@ -237,12 +237,25 @@ def own_dir(incomming_dir, outcomming_id): # 0 - turn left, 1 - forward, 2 - rig
             rospy.logionf("alarm! we need to go left from left! bot will come in the random direction")
             return [0,1,2]
 
-def set_graph(G):
+def set_graph(G, map_observing):
     G.add_node(-1, label="|")
     G.add_node(0,  label="T-right")
     G.add_node(1,  label="T-down")
     G.add_node(2,  label="T-left")
     G.add_node(3,  label="T-up")
+    G.add_edge(-1, 0, label="left -> up")
+    G.add_edge(0, -1, label="up -> left")
+    G.add_edge(0, 1, label="right -> left")
+    G.add_edge(1, 0, label="left -> right")
+    G.add_edge(1, 2, label="right -> left")
+    G.add_edge(2, 1, label="left -> right")
+    G.add_edge(0, 3, label="down -> left")
+    G.add_edge(3, 0, label="left -> down")
+    G.add_edge(3, 2, label="right -> down")
+    G.add_edge(2, 3, label="down -> right")
+    G.add_edge(2, -1, label="up -> right")
+    G.add_edge(-1, 2, label="right -> up")
+    map_observing = False
 
 class RandomAprilTagTurnsNode(object):
     def __init__(self):
@@ -279,6 +292,7 @@ class RandomAprilTagTurnsNode(object):
         self.prev_invoke_time = time.time()
         self.airport_x = 0
         self.airport_y = 0
+        #set_graph(self.G, self.map_observing)
 
     def cbMode(self, mode_msg):
         #print mode_msg
@@ -342,11 +356,12 @@ class RandomAprilTagTurnsNode(object):
                             send_ready(True, [self.airport_x, self.airport_y])
                             return
 
-                        self.path = found_path_to_unobserved(self.G,
+                        b, self.path = found_path_to_unobserved(self.G,
                                                              id,
                                                              incomming_dir,
                                                              [],
                                                              find_path_to_airport)
+                        rospy.loginfo("path to airport: "+ str(self.path))
 
                 availableTurns = own_dir(incomming_dir, self.path[0])
                 self.outcomming_dir = self.path[0]
