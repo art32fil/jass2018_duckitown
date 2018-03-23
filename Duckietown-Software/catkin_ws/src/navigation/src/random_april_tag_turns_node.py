@@ -57,9 +57,12 @@ def new_observation(G, new_id, new_type, new_dir, prev_id, prev_dir):
         rospy.loginfo ("prev id is -2, so we don't add edge")
         return
     rospy.loginfo ("prev id is not -2. carry on")
-    if (G.has_edge(prev_id, new_id) or G.has_edge(new_id, prev_id)):
-        rospy.loginfo("this edge already exists")
-        return
+    Es = G.edges(prev_id)
+    for edge in Es0:
+        if (edge[1] == new_id and edge[2]['label'] == prev_dir+" -> "+new_dir):
+            rospy.loginfo("this edge already exists")
+            return
+
     rospy.loginfo("edges are added")
     G.add_edge(new_id, prev_id, label=new_dir+" -> "+prev_dir)
     G.add_edge(prev_id, new_id, label=prev_dir+" -> "+new_dir)
@@ -270,13 +273,13 @@ class RandomAprilTagTurnsNode(object):
                 self.prev_invoke_time = curr_invoke_time
                 if (detection.id == -1):
                     rospy.loginfo("aiport found on" + 
-                                  detection.pose.header.frame_id.split(" ")[-2] + 
-                                  detection.pose.header.frame_id.split(" ")[-1])
+                                  detection.pose.header.frame_id.split(" ")[-3] + 
+                                  detection.pose.header.frame_id.split(" ")[-2])
                     id = -1
                     type = "|"
-                    incomming_dir = 'down'
-                    self.airport_x = detection.pose.header.frame_id.split(" ")[-2]
-                    self.airport_y = detection.pose.header.frame_id.split(" ")[-1]
+                    incomming_dir = detection.pose.header.frame_id.split(" ")[-1]
+                    self.airport_x = detection.pose.header.frame_id.split(" ")[-3]
+                    self.airport_y = detection.pose.header.frame_id.split(" ")[-2]
                 else:
                     id, type, incomming_dir = extract_info(detection.id)
                 rospy.loginfo("found id: " + str(id))
