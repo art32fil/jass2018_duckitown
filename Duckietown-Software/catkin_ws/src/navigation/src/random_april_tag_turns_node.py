@@ -7,9 +7,15 @@ import networkx as nx
 import time
 
 def extract_info(dec_digit):
-    rospy.loginfo("number(10): " + str(dec_digit))
     digit = bin(dec_digit)
-    rospy.loginfo("number(2): " + str(digit))
+    digit_len = len(digit)-2
+    cnt_zero = 16 - digit_len
+    zeros = ''
+    for i in range(cnt_zero):
+        zeros += '0'
+    t = digit.split('0b')
+    digit = '0b' + zeros + t[1]
+    print(digit)
     array = []
     two_last = digit[-2:]
     if int(two_last, 2) == 0: array.append("up")
