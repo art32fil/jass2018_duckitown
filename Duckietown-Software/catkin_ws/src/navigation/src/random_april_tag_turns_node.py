@@ -263,7 +263,7 @@ class RandomAprilTagTurnsNode(object):
         self.outcomming_id = -2
         self.outcomming_dir = '0'
         self.path = []
-        self.map_observing = False
+        self.map_observing = True
         self.prev_invoke_time = time.time()
         self.airport_x = 0
         self.airport_y = 0
@@ -295,6 +295,9 @@ class RandomAprilTagTurnsNode(object):
                     incomming_dir = detection.pose.header.frame_id.split(" ")[-1]
                     self.airport_x = detection.pose.header.frame_id.split(" ")[-3]
                     self.airport_y = detection.pose.header.frame_id.split(" ")[-2]
+                    rospy.loginfo("sending message")
+                    rospy.loginfo("x = "+str(self.airport_x) + ", y = " + str(self.airport_y))
+                    send_ready(True, [self.airport_x, self.airport_y])
                 else:
                     id, type, incomming_dir = extract_info(detection.id)
                 rospy.loginfo("found id: " + str(id))
@@ -313,10 +316,8 @@ class RandomAprilTagTurnsNode(object):
                                                          self.outcomming_dir)
                     nx.nx_agraph.write_dot(self.G, "/home/ubuntu/graph.txt")
                     if (self.map_observing == False):
-                        if (id == -1):
-                            rospy.loginfo("sending message")
-                            rospy.loginfo("x = "+str(self.airport_x) + ", y = " + str(self.airport_y))
-                            send_ready(True, [self.airport_x, self.airport_y])
+                        #if (id == -1):
+
                         self.path = found_path_to_unobserved(self.G,
                                                              id,
                                                              incomming_dir,
