@@ -283,7 +283,7 @@ class RandomAprilTagTurnsNode(object):
                 rospy.loginfo("has type: " + type)
                 rospy.loginfo("incomming dir: " + incomming_dir)
                 rospy.loginfo("previous id: " + str(self.outcomming_id))
-                rospy.loginfo("outcomming dir: " + str(self.outcommimg_dir))
+                rospy.loginfo("outcomming dir: " + str(self.outcomming_dir))
                 if (len(self.path) == 0):
                     rospy.loginfo("self.path = " + str(self.path))
                     rospy.loginfo("self.outcomming_dir = " + str(self.outcomming_dir))
