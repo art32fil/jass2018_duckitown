@@ -13,7 +13,8 @@
 #include <stdlib.h>
 #include <iostream>
 #include <Eigen/Dense>
-
+#include <string.h>
+#include <sstream>
 #include "opencv2/opencv.hpp"
 
 #include <utility>
@@ -633,7 +634,13 @@ Eigen::Matrix4d getRelativeTransform(std::pair<float, float>* p, double tag_size
 
       duckietown_msgs::AprilTagDetection tag_detection;
       tag_detection.pose = tag_pose;
-      tag_detection.id = atoi(symbol->get_data().c_str());
+      int x,y;
+      if (symbol->get_data().length() > 0 & symbol->get_data()[0] == 'a') {
+        tag_detection.id = -1ж
+        tag_detection.pose.header.frame_id += std::string(" ") + symbol->get_data();
+      }
+      else
+        tag_detection.id = atoi(symbol->get_data().c_str());
       cv::circle(cv_ptr->image,cv::Point(symbol->get_location_x(0), symbol->get_location_y(0)), 10,cv::Scalar( 255, 0, 0 ),8);
       int mask = 1024*1024;
       while (mask>0) {

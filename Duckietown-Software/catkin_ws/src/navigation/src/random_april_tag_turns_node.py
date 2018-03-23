@@ -48,7 +48,7 @@ def new_observation(G, new_id, new_type, new_dir, prev_id, prev_dir):
         return
     if (not G.has_node(new_id)):
         G.add_node(new_id, label=str(new_id)+": "+new_type)
-    if (prev_id == -1):
+    if (prev_id == -2):
         return
     if (G.has_edge(prev_id, new_id) or G.has_edge(new_id, prev_id)):
         return
@@ -80,6 +80,8 @@ def possible_dirs(G, id):
         return['left', 'up', 'down']
     if (attributes[id] == str(id)+": X"):
         return['left', 'up', 'down', 'right']
+    if (attributes[id] == str(id)+": |")
+        return['up', 'down']
 
 def get_id_dir_for_move(G, prev_id, prev_dir):
     # all links are set
@@ -99,9 +101,9 @@ def get_id_dir_for_move(G, prev_id, prev_dir):
                         edge[2]['label'].split(' -> ')[1]])
     return out
 
-def found_path_to_unobserved(G, id, prev_dir, list_of_observed):
+def found_path_to_unobserved(G, id, prev_dir, list_of_observed, possible_moves):
     #print ("we were here: "+str(list_of_observed))
-    npm = new_possible_moves(G, id, prev_dir)
+    npm = possible_moves(G, id, prev_dir)
     if (len(npm) != 0):
        #print ("I ("+str(id)+") have unobserved "+str(npm))
        return True, [npm[0]]
@@ -114,7 +116,8 @@ def found_path_to_unobserved(G, id, prev_dir, list_of_observed):
             continue
         #print ("this child was not visited yet")
         b, path = found_path_to_unobserved(G, child[1], child[2],
-                                           list_of_observed+[[child[1], child[0]]])
+                                           list_of_observed+[[child[1], child[0]]],
+                                           possible_moves)
         if (b):
             #print ("my ("+str(id)+") child ("+str(child[1])+") has unobserved way, so i do "+str(child[0]))
             return True, [child[0]]+path
@@ -122,7 +125,12 @@ def found_path_to_unobserved(G, id, prev_dir, list_of_observed):
     return False, []
 
 def i_has_unobserved_way(G, id, prev_dir):
-    return found_path_to_unobserved(G, id, prev_dir, [])
+    return found_path_to_unobserved(G, id, prev_dir, [], new_possible_moves)
+
+def find_path_to_airport(G, id, prev_dir):
+    if (id == -2):
+       return []
+    
 
 def observed_dirs(G, id):
     Es = G.edges(id, data=True)
@@ -223,11 +231,13 @@ class RandomAprilTagTurnsNode(object):
 
         self.rate = rospy.Rate(30) # 10hz
         self.G = nx.MultiDiGraph()
-        self.outcommimg_id = -1
+        self.outcommimg_id = -2
         self.outcomming_dir = '0'
         self.path = []
         self.map_observing = True
         self.prev_invoke_time = time.time()
+        self.airport_x = 0
+        self.airport_y = 0
 
     def cbMode(self, mode_msg):
         #print mode_msg
@@ -247,14 +257,23 @@ class RandomAprilTagTurnsNode(object):
                     self.pub_turn_type.publish(self.turn_type)
                     return
                 self.prev_invoke_time = curr_invoke_time
-
-                id, type, incomming_dir = extract_info(detection.id)
+                if (detection.id == -1):
+                    rospy.loginfo("aiport found on" + 
+                                  detection.pose.header.frame_id.split(" ")[-2] + 
+                                  detection.pose.header.frame_id.split(" ")[-1])
+                    id = -1
+                    type = "|"
+                    incomming_dir = 'down'
+                    self.airport_x = detection.pose.header.frame_id.split(" ")[-2]
+                    self.airport_y = detection.pose.header.frame_id.split(" ")[-1]
+                else:
+                    id, type, incomming_dir = extract_info(detection.id)
                 rospy.loginfo("found id: " + str(id))
                 rospy.loginfo("has type: " + type)
                 rospy.loginfo("incomming dir: " + incomming_dir)
                 if (len(self.path) == 0):
                     rospy.loginfo("self.path = " + str(self.path))
-                    rospy.loginfo("self.path = " + str(self.outcomming_dir))
+                    rospy.loginfo("self.outcomming_dir = " + str(self.outcomming_dir))
                     self.map_observing, self.path = step(self.G,
                                                          id,
                                                          type,
@@ -262,6 +281,11 @@ class RandomAprilTagTurnsNode(object):
                                                          self.outcommimg_id,
                                                          self.outcomming_dir)
                     nx.nx_agraph.write_dot(self.G, "/home/ubuntu/graph.txt")
+                    if (self.map_observing == False):
+                        self.path = found_path_to_unobserved(self.G,
+                                                             id,
+                                                             incomming_dir,
+                                                             find_path_to_airport)
 
                 availableTurns = own_dir(incomming_dir, self.path[0])
                 self.outcomming_dir = self.path[0]
