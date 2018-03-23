@@ -38,7 +38,8 @@ def come_is_possible(new_type, new_dir):
                   'T-right': {'left': 0, 'up': 1, 'right': 1, 'down': 1},
                   'T-down':  {'left': 1, 'up': 0, 'right': 1, 'down': 1},
                   'T-left':  {'left': 1, 'up': 1, 'right': 0, 'down': 1},
-                  'X':       {'left': 1, 'up': 1, 'right': 1, 'down': 1}}
+                  'X':       {'left': 1, 'up': 1, 'right': 1, 'down': 1},
+                  '|':       {'left': 0, 'up': 1, 'right': 0, 'down': 1}}
     return dictionary[new_type][new_dir]
 
 
