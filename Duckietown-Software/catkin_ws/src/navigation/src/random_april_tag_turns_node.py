@@ -48,7 +48,7 @@ def new_observation(G, new_id, new_type, new_dir, prev_id, prev_dir):
         return
     if (not G.has_node(new_id)):
         G.add_node(new_id, label=str(new_id)+": "+new_type)
-    if (prev_id == 0):
+    if (prev_id == -1):
         return
     if (G.has_edge(prev_id, new_id) or G.has_edge(new_id, prev_id)):
         return
