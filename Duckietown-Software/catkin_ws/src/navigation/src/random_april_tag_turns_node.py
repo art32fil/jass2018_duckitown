@@ -40,7 +40,7 @@ def new_observation(G, new_id, new_type, new_dir, prev_id, prev_dir):
         return
     if (not G.has_node(new_id)):
         G.add_node(new_id, label=str(new_id)+": "+new_type)
-    if (len(G) == 1):
+    if (prev_id == 0):
         return
     if (G.has_edge(prev_id, new_id) or G.has_edge(new_id, prev_id)):
         return
@@ -231,6 +231,7 @@ class RandomAprilTagTurnsNode(object):
 
     def cbTag(self, tag_msgs):
         if(self.fsm_mode == "INTERSECTION_CONTROL"):
+            self.pub_turn_type.publish(self.turn_type)
             for detection in tag_msgs.detections:
                 curr_invoke_time = time.time()
                 if (curr_invoke_time - self.prev_invoke_time < 10):
