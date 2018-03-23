@@ -63,7 +63,7 @@ def new_observation(G, new_id, new_type, new_dir, prev_id, prev_dir):
     if (not come_is_possible(new_type, new_dir)):
         rospy.loginfo("alarm! we come to " + new_type + " through " + new_dir)
         return
-    rospy.loginfo("we come from right lodirection")
+    rospy.loginfo("we come from right direction")
     if (not G.has_node(new_id)):
         G.add_node(new_id, label=str(new_id)+": "+new_type)
     rospy.loginfo("new id " + str(new_id) + "is in graph (added or already was)")
@@ -264,6 +264,7 @@ class RandomAprilTagTurnsNode(object):
         self.outcomming_dir = '0'
         self.path = []
         self.map_observing = True
+        self.sending_airport_coord_stage = False
         self.prev_invoke_time = time.time()
         self.airport_x = 0
         self.airport_y = 0
@@ -278,26 +279,30 @@ class RandomAprilTagTurnsNode(object):
 
     def cbTag(self, tag_msgs):
         if(self.fsm_mode == "INTERSECTION_CONTROL"):
+            if (self.sending_airport_coord_stage):
+                rospy.loginfo("sending message")
+                rospy.loginfo("x = "+str(self.airport_x) + 
+                              ", y = " + str(self.airport_y))
+                send_ready(True, [self.airport_x, self.airport_y])
+                return
+            
             self.pub_turn_type.publish(self.turn_type)
             for detection in tag_msgs.detections:
                 curr_invoke_time = time.time()
-                if (curr_invoke_time - self.prev_invoke_time < 10):
+                if (curr_invoke_time - self.prev_invoke_time < 5):
                     self.prev_invoke_time = curr_invoke_time
                     self.pub_turn_type.publish(self.turn_type)
                     return
                 self.prev_invoke_time = curr_invoke_time
                 if (detection.id == -1):
-                    rospy.loginfo("aiport found on" + 
-                                  detection.pose.header.frame_id.split(" ")[-3] + 
+                    rospy.loginfo("airport found on " + 
+                                  detection.pose.header.frame_id.split(" ")[-3] + " " +
                                   detection.pose.header.frame_id.split(" ")[-2])
                     id = -1
                     type = "|"
                     incomming_dir = detection.pose.header.frame_id.split(" ")[-1]
                     self.airport_x = detection.pose.header.frame_id.split(" ")[-3]
                     self.airport_y = detection.pose.header.frame_id.split(" ")[-2]
-                    rospy.loginfo("sending message")
-                    rospy.loginfo("x = "+str(self.airport_x) + ", y = " + str(self.airport_y))
-                    send_ready(True, [self.airport_x, self.airport_y])
                 else:
                     id, type, incomming_dir = extract_info(detection.id)
                 rospy.loginfo("found id: " + str(id))
@@ -316,7 +321,13 @@ class RandomAprilTagTurnsNode(object):
                                                          self.outcomming_dir)
                     nx.nx_agraph.write_dot(self.G, "/home/ubuntu/graph.txt")
                     if (self.map_observing == False):
-                        #if (id == -1):
+                        if (id == -1):
+                            self.sending_airport_coord_stage = True
+                            rospy.loginfo("sending message")
+                            rospy.loginfo("x = "+str(self.airport_x) + 
+                                          ", y = " + str(self.airport_y))
+                            send_ready(True, [self.airport_x, self.airport_y])
+                            return
 
                         self.path = found_path_to_unobserved(self.G,
                                                              id,
