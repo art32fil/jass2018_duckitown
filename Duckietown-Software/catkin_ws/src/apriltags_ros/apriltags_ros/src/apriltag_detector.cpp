@@ -636,7 +636,7 @@ Eigen::Matrix4d getRelativeTransform(std::pair<float, float>* p, double tag_size
       tag_detection.pose = tag_pose;
       int x,y;
       if (symbol->get_data().length() > 0 & symbol->get_data()[0] == 'a') {
-        tag_detection.id = -1ж
+        tag_detection.id = -1;
         tag_detection.pose.header.frame_id += std::string(" ") + symbol->get_data();
       }
       else
