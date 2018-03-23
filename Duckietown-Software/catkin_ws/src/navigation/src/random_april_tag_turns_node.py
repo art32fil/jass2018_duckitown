@@ -44,17 +44,23 @@ def come_is_possible(new_type, new_dir):
 
 
 def new_observation(G, new_id, new_type, new_dir, prev_id, prev_dir):
+    rospy.loginfo("try to add edge: "+str(new_id)+ ": " + new_dir+" -> "+prev_dir + ": " + str(prev_id))
+    rospy.loginfo("try to add edge: "+str(prev_id)+ ": " + prev_dir+" -> "+new_dir + ": " + str(new_id))
     if (not come_is_possible(new_type, new_dir)):
         rospy.loginfo("alarm! we come to " + new_type + " through " + new_dir)
         return
+    rospy.loginfo("we come from right lodirection")
     if (not G.has_node(new_id)):
         G.add_node(new_id, label=str(new_id)+": "+new_type)
+    rospy.loginfo("new id " + str(id) + "is in graph (added or already was)")
     if (prev_id == -2):
+        rospy.loginfo ("prev id is -2, so we don't add edge")
         return
+    rospy.loginfo ("prev id is not -2. carry on")
     if (G.has_edge(prev_id, new_id) or G.has_edge(new_id, prev_id)):
+        rospy.loginfo("this edge already exists")
         return
-    rospy.loginfo("add edge: "+str(new_id)+ ": " + new_dir+" -> "+prev_dir + ": " + str(prev_id))
-    rospy.loginfo("add edge: "+str(prev_id)+ ": " + prev_dir+" -> "+new_dir + ": " + str(new_id))
+    rospy.loginfo("edges are added")
     G.add_edge(new_id, prev_id, label=new_dir+" -> "+prev_dir)
     G.add_edge(prev_id, new_id, label=prev_dir+" -> "+new_dir)
 
@@ -276,6 +282,8 @@ class RandomAprilTagTurnsNode(object):
                 rospy.loginfo("found id: " + str(id))
                 rospy.loginfo("has type: " + type)
                 rospy.loginfo("incomming dir: " + incomming_dir)
+                rospy.loginfo("previous id: " + str(self.outcommimg_id))
+                rospy.loginfo("outcomming dir: " + str(self.outcommimg_dir))
                 if (len(self.path) == 0):
                     rospy.loginfo("self.path = " + str(self.path))
                     rospy.loginfo("self.outcomming_dir = " + str(self.outcomming_dir))
