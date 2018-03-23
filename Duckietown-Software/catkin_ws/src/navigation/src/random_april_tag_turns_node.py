@@ -237,6 +237,12 @@ def own_dir(incomming_dir, outcomming_id): # 0 - turn left, 1 - forward, 2 - rig
             rospy.logionf("alarm! we need to go left from left! bot will come in the random direction")
             return [0,1,2]
 
+def set_graph(G):
+    G.add_node(-1, label="|")
+    G.add_node(0,  label="T-right")
+    G.add_node(1,  label="T-down")
+    G.add_node(2,  label="T-left")
+    G.add_node(3,  label="T-up")
 
 class RandomAprilTagTurnsNode(object):
     def __init__(self):
@@ -316,6 +322,16 @@ class RandomAprilTagTurnsNode(object):
                 rospy.loginfo("previous id: " + str(self.outcomming_id))
                 rospy.loginfo("outcomming dir: " + str(self.outcomming_dir))
                 if (len(self.path) == 0):
+                    if (self.map_observing == True):
+                        rospy.loginfo("self.path = " + str(self.path))
+                        rospy.loginfo("self.outcomming_dir = " + str(self.outcomming_dir))
+                        self.map_observing, self.path = step(self.G,
+                                                             id,
+                                                             type,
+                                                             incomming_dir,
+                                                             self.outcomming_id,
+                                                             self.outcomming_dir)
+                        nx.nx_agraph.write_dot(self.G, "/home/ubuntu/graph.txt")
                     if (self.map_observing == False):
                         rospy.loginfo("graph is ready. try to find path to airport")
                         if (id == -1):
@@ -331,16 +347,6 @@ class RandomAprilTagTurnsNode(object):
                                                              incomming_dir,
                                                              [],
                                                              find_path_to_airport)
-                    else:
-                        rospy.loginfo("self.path = " + str(self.path))
-                        rospy.loginfo("self.outcomming_dir = " + str(self.outcomming_dir))
-                        self.map_observing, self.path = step(self.G,
-                                                             id,
-                                                             type,
-                                                             incomming_dir,
-                                                             self.outcomming_id,
-                                                             self.outcomming_dir)
-                        nx.nx_agraph.write_dot(self.G, "/home/ubuntu/graph.txt")
 
                 availableTurns = own_dir(incomming_dir, self.path[0])
                 self.outcomming_dir = self.path[0]
