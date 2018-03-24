@@ -358,7 +358,7 @@ class RandomAprilTagTurnsNode(object):
                 rospy.loginfo("sending message")
                 rospy.loginfo("x = "+str(self.airport_x) + 
                               ", y = " + str(self.airport_y))
-                send_ready(True, [self.airport_x, self.airport_y])
+                send_ready(self)
                 return
             
             self.pub_turn_type.publish(self.turn_type)
@@ -406,7 +406,7 @@ class RandomAprilTagTurnsNode(object):
                             rospy.loginfo("sending message")
                             rospy.loginfo("x = "+str(self.airport_x) + 
                                           ", y = " + str(self.airport_y))
-                            send_ready(True, [self.airport_x, self.airport_y])
+                            send_ready(self)
                             return
 
                         b, self.path = found_path_to_unobserved(self.G,
