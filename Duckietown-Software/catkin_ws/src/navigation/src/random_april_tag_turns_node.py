@@ -8,15 +8,21 @@ import time
 import socket
 import json
 import pickle
+import thread
 
-def send_ready(duck_is_ready, coord):
-    json_file = json.dumps({"duck_is_ready" : duck_is_ready, "x" : coord[0], "y" : coord[1]})
+def send_ready(obj):
     sock = socket.socket()
     sock.bind(('', 9090))
     sock.listen(1)
     conn, addr = sock.accept()
+    json_file = json.dumps({"duck_is_ready" : True, "x" : obj.airport_x, "y" : obj.airport_y})
     print(pickle.dumps(json_file))
     print(pickle.loads((pickle.dumps(json_file))))
+    while (not obj.sending_airport_coord_stage):
+        time.sleep(5)
+    rospy.loginfo("sending message")
+    rospy.loginfo("x = "+str(obj.airport_x) + 
+                  ", y = " + str(obj.airport_y))
     conn.sendall(pickle.dumps(json_file))
     conn.close()
 
@@ -293,7 +299,8 @@ class RandomAprilTagTurnsNode(object):
         self.prev_invoke_time = time.time()
         self.airport_x = 0
         self.airport_y = 0
-        #set_graph(self.G, self.map_observing)
+        set_graph(self.G, self.map_observing)
+        thread.start_new_thread(send_ready(self))
 
     def cbMode(self, mode_msg):
         #print mode_msg
@@ -306,10 +313,10 @@ class RandomAprilTagTurnsNode(object):
     def cbTag(self, tag_msgs):
         if(self.fsm_mode == "INTERSECTION_CONTROL"):
             if (self.sending_airport_coord_stage):
-                rospy.loginfo("sending message")
-                rospy.loginfo("x = "+str(self.airport_x) + 
-                              ", y = " + str(self.airport_y))
-                send_ready(True, [self.airport_x, self.airport_y])
+                #rospy.loginfo("sending message")
+                #rospy.loginfo("x = "+str(self.airport_x) + 
+                #              ", y = " + str(self.airport_y))
+                #send_ready(True, [self.airport_x, self.airport_y])
                 return
             
             self.pub_turn_type.publish(self.turn_type)
@@ -351,10 +358,10 @@ class RandomAprilTagTurnsNode(object):
                         rospy.loginfo("graph is ready. try to find path to airport")
                         if (id == -1):
                             self.sending_airport_coord_stage = True
-                            rospy.loginfo("sending message")
-                            rospy.loginfo("x = "+str(self.airport_x) + 
-                                          ", y = " + str(self.airport_y))
-                            send_ready(True, [self.airport_x, self.airport_y])
+                            #rospy.loginfo("sending message")
+                            #rospy.loginfo("x = "+str(self.airport_x) + 
+                            #              ", y = " + str(self.airport_y))
+                            #send_ready(True, [self.airport_x, self.airport_y])
                             return
 
                         b, self.path = found_path_to_unobserved(self.G,
