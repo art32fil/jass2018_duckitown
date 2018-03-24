@@ -163,7 +163,7 @@ def find_path_to_airport(G, id, prev_dir):
     rospy.loginfo("the edges of "+str(id)+": "+str(Es))
     for edge in Es:
         if (edge[1] == -1 and edge[2]['label'].split(' -> ')[0] != prev_dir):
-            return edge[2]['label'].split(' -> ')[0]
+            return [edge[2]['label'].split(' -> ')[0]]
     return []
     
 
