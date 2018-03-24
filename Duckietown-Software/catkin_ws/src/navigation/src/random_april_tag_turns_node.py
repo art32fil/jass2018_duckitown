@@ -42,9 +42,11 @@ class MyThread(threading.Tread):
 def send_ready(obj):
     sock = socket.socket()
     sock.bind(('', 9090))
+    rospy.loginfo("the socket is open")
     sock.listen(1)
-    
+    rospy.loginfo("there is someone")
     conn, addr = sock.accept()
+    rospy.loginfo("it is accept")
     rospy.loginfo("wait for sending_airport_coord_stage=" + str(obj.sending_airport_coord_stage) + " become true")
     while (not obj.sending_airport_coord_stage):
         rospy.loginfo("bool still false")
