@@ -31,12 +31,12 @@ class MyThread(threading.Tread):
         print(pickle.dumps(json_file))
         print(pickle.loads((pickle.dumps(json_file))))
         rospy.loginfo("wait for sending_airport_coord_stage=" + str(sending_airport_coord_stage) + " become true")
-    while (not sending_airport_coord_stage):
-        rospy.loginfo("bool still false")
-        time.sleep(5)
-        rospy.loginfo("sending message")
-        rospy.loginfo("x = "+str(airport_x) + 
-                      ", y = " + str(airport_y))
+        while (not sending_airport_coord_stage):
+            rospy.loginfo("bool still false")
+            time.sleep(5)
+            rospy.loginfo("sending message")
+            rospy.loginfo("x = "+str(airport_x) + 
+                          ", y = " + str(airport_y))
         conn.sendall(pickle.dumps(json_file))
         conn.close()
 
