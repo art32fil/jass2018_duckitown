@@ -299,9 +299,9 @@ def set_graph(G, map_observing):
 class RandomAprilTagTurnsNode(object):
     def __init__(self):
         # Save the name of the node
-        global sending_airport_coord_stage
-        global airport_x
-        global airport_y
+        #global sending_airport_coord_stage
+        #global airport_x
+        #global airport_y
         self.node_name = rospy.get_name()
         self.turn_type = -1
 
@@ -331,13 +331,13 @@ class RandomAprilTagTurnsNode(object):
         self.path = []
         self.map_observing = True
         self.sending_airport_coord_stage = False
-        sending_airport_coord_stage = self.sending_airport_coord_stage
+        #sending_airport_coord_stage = self.sending_airport_coord_stage
         
         self.prev_invoke_time = time.time()
         self.airport_x = 0
-        airport_x = self.airport_x
+        #airport_x = self.airport_x
         self.airport_y = 0
-        airport_x = self.airport_x
+        #airport_x = self.airport_x
         set_graph(self.G, self.map_observing)
         thread.start_new_thread(send_ready(self))
         #self.thr = MyThread()
