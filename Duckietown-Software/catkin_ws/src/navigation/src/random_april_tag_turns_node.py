@@ -18,7 +18,9 @@ def send_ready(obj):
     json_file = json.dumps({"duck_is_ready" : True, "x" : int(obj.airport_x), "y" : int(obj.airport_y)})
     print(pickle.dumps(json_file))
     print(pickle.loads((pickle.dumps(json_file))))
+    rospy.loginfo("wait for sending_airport_coord_stage=" + str(obj.sending_airport_coord_stage) + " become true")
     while (not obj.sending_airport_coord_stage):
+        rospy.loginfo("bool still false")
         time.sleep(5)
     rospy.loginfo("sending message")
     rospy.loginfo("x = "+str(obj.airport_x) + 
