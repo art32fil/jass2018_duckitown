@@ -17,7 +17,7 @@ sending_airport_coord_stage=0
 
 class MyThread(threading.Tread):
     def __init__(self):
-        threading.Tread(self)
+        threading.Tread.__init__(self)
     def run(self):
         global airport_x
         global airport_y
