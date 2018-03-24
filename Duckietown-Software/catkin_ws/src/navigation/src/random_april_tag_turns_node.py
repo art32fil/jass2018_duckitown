@@ -15,7 +15,7 @@ def send_ready(obj):
     sock.bind(('', 9090))
     sock.listen(1)
     conn, addr = sock.accept()
-    json_file = json.dumps({"duck_is_ready" : True, "x" : obj.airport_x, "y" : obj.airport_y})
+    json_file = json.dumps({"duck_is_ready" : True, "x" : int(obj.airport_x), "y" : int(obj.airport_y)})
     print(pickle.dumps(json_file))
     print(pickle.loads((pickle.dumps(json_file))))
     while (not obj.sending_airport_coord_stage):
