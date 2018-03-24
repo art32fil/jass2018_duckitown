@@ -27,16 +27,15 @@ class MyThread(threading.Tread):
         sock.listen(1)
     
         conn, addr = sock.accept()
-        json_file = json.dumps({"duck_is_ready" : True, "x" : int(airport_x), "y" : int(airport_y)})
-        print(pickle.dumps(json_file))
-        print(pickle.loads((pickle.dumps(json_file))))
+        
         rospy.loginfo("wait for sending_airport_coord_stage=" + str(sending_airport_coord_stage) + " become true")
         while (not sending_airport_coord_stage):
             rospy.loginfo("bool still false")
             time.sleep(5)
-            rospy.loginfo("sending message")
-            rospy.loginfo("x = "+str(airport_x) + 
-                          ", y = " + str(airport_y))
+        json_file = json.dumps({"duck_is_ready" : True, "x" : int(airport_x), "y" : int(airport_y)})
+        rospy.loginfo("sending message")
+        rospy.loginfo("x = "+str(airport_x) + 
+                      ", y = " + str(airport_y))
         conn.sendall(pickle.dumps(json_file))
         conn.close()
 
@@ -46,13 +45,11 @@ def send_ready(obj):
     sock.listen(1)
     
     conn, addr = sock.accept()
-    json_file = json.dumps({"duck_is_ready" : True, "x" : int(obj.airport_x), "y" : int(obj.airport_y)})
-    print(pickle.dumps(json_file))
-    print(pickle.loads((pickle.dumps(json_file))))
     rospy.loginfo("wait for sending_airport_coord_stage=" + str(obj.sending_airport_coord_stage) + " become true")
     while (not obj.sending_airport_coord_stage):
         rospy.loginfo("bool still false")
         time.sleep(5)
+    json_file = json.dumps({"duck_is_ready" : True, "x" : int(obj.airport_x), "y" : int(obj.airport_y)})
     rospy.loginfo("sending message")
     rospy.loginfo("x = "+str(obj.airport_x) + 
                   ", y = " + str(obj.airport_y))
@@ -340,8 +337,8 @@ class RandomAprilTagTurnsNode(object):
         self.airport_y = 0
         airport_x = self.airport_x
         set_graph(self.G, self.map_observing)
-        #thread.start_new_thread(send_ready(self))
-        self.thr = MyThread()
+        thread.start_new_thread(send_ready(self))
+        #self.thr = MyThread()
 
     def cbMode(self, mode_msg):
         #print mode_msg
