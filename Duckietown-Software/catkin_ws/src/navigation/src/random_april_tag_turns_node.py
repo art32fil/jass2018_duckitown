@@ -341,8 +341,8 @@ class RandomAprilTagTurnsNode(object):
         airport_x = self.airport_x
         set_graph(self.G, self.map_observing)
         #thread.start_new_thread(send_ready(self))
-        self.thr = MyThread()
-        self.thr.start()
+        #self.thr = MyThread()
+        #self.thr.start()
 
     def cbMode(self, mode_msg):
         #print mode_msg
@@ -355,10 +355,10 @@ class RandomAprilTagTurnsNode(object):
     def cbTag(self, tag_msgs):
         if(self.fsm_mode == "INTERSECTION_CONTROL"):
             if (self.sending_airport_coord_stage):
-                #rospy.loginfo("sending message")
-                #rospy.loginfo("x = "+str(self.airport_x) + 
-                #              ", y = " + str(self.airport_y))
-                #send_ready(True, [self.airport_x, self.airport_y])
+                rospy.loginfo("sending message")
+                rospy.loginfo("x = "+str(self.airport_x) + 
+                              ", y = " + str(self.airport_y))
+                send_ready(True, [self.airport_x, self.airport_y])
                 return
             
             self.pub_turn_type.publish(self.turn_type)
@@ -403,10 +403,10 @@ class RandomAprilTagTurnsNode(object):
                         if (id == -1):
                             self.sending_airport_coord_stage = True
                             sending_airport_coord_stage = self.sending_airport_coord_stage
-                            #rospy.loginfo("sending message")
-                            #rospy.loginfo("x = "+str(self.airport_x) + 
-                            #              ", y = " + str(self.airport_y))
-                            #send_ready(True, [self.airport_x, self.airport_y])
+                            rospy.loginfo("sending message")
+                            rospy.loginfo("x = "+str(self.airport_x) + 
+                                          ", y = " + str(self.airport_y))
+                            send_ready(True, [self.airport_x, self.airport_y])
                             return
 
                         b, self.path = found_path_to_unobserved(self.G,
